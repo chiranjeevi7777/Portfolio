@@ -945,6 +945,71 @@
       background: linear-gradient(135deg, var(--highlight), var(--primary));
     }
 
+    /* Achievements Section */
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .achievement-card {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-lg);
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .achievement-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(230,36,41,0.35);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    }
+
+    .achievement-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(230,36,41,0.06);
+      border: 1px solid rgba(230,36,41,0.18);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+    }
+
+    .achievement-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .achievement-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+    }
+
+    .achievement-meta {
+      color: var(--primary);
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .achievement-desc {
+      color: var(--soft);
+      font-size: 0.88rem;
+      line-height: 1.62;
+    }
+
+    @media (max-width: 860px) {
+      .achievements-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .project-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
@@ -1945,6 +2010,50 @@
             </ul>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section class="section" id="achievements" aria-labelledby="achievements-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <span class="eyebrow">Milestones</span>
+            <h2 class="section-title" id="achievements-title">Quantifiable success and peer recognition.</h2>
+          </div>
+          <p class="section-copy">Key milestones validating technical design, execution quality, and engineering value.</p>
+        </div>
+
+        <div class="achievements-grid">
+          <!-- ACHIEVEMENT 01: Paper Publication -->
+          <article class="achievement-card glass reveal">
+            <div class="achievement-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </div>
+            <h3>Paper Publication</h3>
+            <p class="achievement-meta">CardioVision AI Architecture</p>
+            <p class="achievement-desc">Co-authored research paper detailing custom InceptionV3 ensemble architecture models, accepted/published in peer-reviewed clinical computational health streams.</p>
+          </article>
+
+          <!-- ACHIEVEMENT 02: SIH Runner Up -->
+          <article class="achievement-card glass reveal">
+            <div class="achievement-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trophy"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/><path d="M12 2a6 6 0 0 1 6 6v3.5c0 1.6-1.2 3.1-2.8 3.5h-6.4C7.2 14.6 6 13.1 6 11.5V8a6 6 0 0 1 6-6Z"/></svg>
+            </div>
+            <h3>SIH Hackathon Runner-Up</h3>
+            <p class="achievement-meta">Smart India Hackathon</p>
+            <p class="achievement-desc">Ranked as runner-up among national finalist teams for designing and building an automated, real-time emergency routing responder platform.</p>
+          </article>
+
+          <!-- ACHIEVEMENT 03: Open Source Impact -->
+          <article class="achievement-card glass reveal">
+            <div class="achievement-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-branch"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+            </div>
+            <h3>Open Source Delivery</h3>
+            <p class="achievement-meta">CareerOS &amp; RAG Pipelines</p>
+            <p class="achievement-desc">Engineered and published a Domain-Driven offline-first career-tracking assistant, publishing structured API tools for the developer community.</p>
+          </article>
+        </div>
       </div>
     </section>
 
