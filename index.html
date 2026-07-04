@@ -1775,22 +1775,22 @@
 
     #cursorSpider {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 44px;
-      height: 44px;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
       pointer-events: auto;
       cursor: pointer;
       z-index: 2147483001;
       transform: translate(-50%, -50%);
       opacity: 1;
       transition: filter 0.2s ease, transform 0.2s ease;
-      filter: drop-shadow(0 0 10px rgba(230,36,41,0.7));
+      filter: drop-shadow(0 2px 8px rgba(230,36,41,0.5));
       will-change: transform;
     }
 
     #cursorSpider:hover {
-      filter: drop-shadow(0 0 18px rgba(255,59,63,1)) scale(1.22);
+      filter: drop-shadow(0 0 14px rgba(230,36,41,0.95)) scale(1.18);
     }
 
     #cursorSpider.caught {
@@ -1799,48 +1799,57 @@
 
     @keyframes spiderSpin {
       0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-      50% { transform: translate(-50%, -50%) scale(1.6) rotate(360deg); }
+      50% { transform: translate(-50%, -50%) scale(1.5) rotate(360deg); }
       100% { transform: translate(-50%, -50%) scale(1) rotate(720deg); }
     }
 
     #cursorSpider .spider-body {
-      fill: #0f172a;
-      stroke: #ff3b3f;
-      stroke-width: 1.2;
+      fill: #0a0a0a;
     }
 
     #cursorSpider .spider-mark {
-      fill: #e62429;
-      filter: drop-shadow(0 0 4px #e62429);
+      fill: var(--primary);
     }
 
     #cursorSpider .spider-leg {
       fill: none;
-      stroke: #ff3b3f;
-      stroke-width: 2.8;
+      stroke: #0a0a0a;
+      stroke-width: 2.6;
       stroke-linecap: round;
       transform-origin: 17px 17px;
     }
 
-    #cursorSpider.walking .spider-leg--l1 { animation: legSwingA 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l2 { animation: legSwingB 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l3 { animation: legSwingA 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l4 { animation: legSwingB 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r1 { animation: legSwingB 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r2 { animation: legSwingA 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r3 { animation: legSwingB 0.24s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r4 { animation: legSwingA 0.24s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l1 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l2 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l3 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l4 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r1 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r2 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r3 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r4 { animation: legSwingA 0.28s ease-in-out infinite; }
 
     @keyframes legSwingA {
-      0%, 100% { transform: rotate(-10deg); }
-      50% { transform: rotate(10deg); }
+      0%, 100% { transform: rotate(-8deg); }
+      50% { transform: rotate(8deg); }
     }
 
     @keyframes legSwingB {
-      0%, 100% { transform: rotate(10deg); }
-      50% { transform: rotate(-10deg); }
+      0%, 100% { transform: rotate(8deg); }
+      50% { transform: rotate(-8deg); }
     }
 
+    @media (hover: none), (pointer: coarse) {
+      #webCanvas {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #webCanvas,
+      #cursorSpider {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2519,9 +2528,12 @@
 
     /* ---------- Spider-web & Autonomous Crawling Spider ---------- */
     (function initSpiderCursor() {
+      const isCoarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+      if (prefersReducedMotion || isCoarsePointer) return;
+
       const canvas = document.getElementById("webCanvas");
       const spider = document.getElementById("cursorSpider");
-      if (!spider) return;
+      if (!canvas || !spider) return;
 
       const ctx = canvas.getContext("2d");
       let dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2588,26 +2600,22 @@
       }, { passive: true });
 
       // Click / Catch Spider to open GitHub!
-      function handleSpiderCatch(e) {
-        if (e) {
-          e.stopPropagation();
-          e.preventDefault();
-        }
-
-        if (spider.classList.contains("caught")) return;
+      spider.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
 
         // Trigger spin catch animation & toast
         spider.classList.add("caught");
         showToast("🕷️ You caught the spider! Opening GitHub profile...");
 
         // Create silk explosion particles on catch!
-        for (let i = 0; i < 16; i++) {
-          const angle = (i / 16) * Math.PI * 2;
-          const speed = Math.random() * 5 + 2.5;
+        for (let i = 0; i < 14; i++) {
+          const angle = (i / 14) * Math.PI * 2;
+          const speed = Math.random() * 4 + 2;
           trail.push({
             x: spiderPos.x,
             y: spiderPos.y,
-            life: 1.5,
+            life: 1.4,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed
           });
@@ -2617,11 +2625,7 @@
           window.open("https://github.com/chiranjeevi7777", "_blank", "noopener,noreferrer");
           spider.classList.remove("caught");
         }, 380);
-      }
-
-      spider.addEventListener("click", handleSpiderCatch);
-      spider.addEventListener("pointerdown", handleSpiderCatch);
-      spider.addEventListener("touchstart", handleSpiderCatch, { passive: false });
+      });
 
       let heading = 0;
 
