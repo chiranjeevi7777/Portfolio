@@ -1777,19 +1777,30 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 34px;
-      height: 34px;
-      pointer-events: none;
+      width: 40px;
+      height: 40px;
+      pointer-events: auto;
+      cursor: pointer;
       z-index: 2147483001;
       transform: translate(-50%, -50%);
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+      opacity: 1;
+      transition: filter 0.2s ease, transform 0.2s ease;
+      filter: drop-shadow(0 2px 8px rgba(230,36,41,0.5));
       will-change: transform;
     }
 
-    #cursorSpider.active {
-      opacity: 1;
+    #cursorSpider:hover {
+      filter: drop-shadow(0 0 14px rgba(230,36,41,0.95)) scale(1.18);
+    }
+
+    #cursorSpider.caught {
+      animation: spiderSpin 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+    }
+
+    @keyframes spiderSpin {
+      0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+      50% { transform: translate(-50%, -50%) scale(1.5) rotate(360deg); }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(720deg); }
     }
 
     #cursorSpider .spider-body {
@@ -1803,33 +1814,32 @@
     #cursorSpider .spider-leg {
       fill: none;
       stroke: #0a0a0a;
-      stroke-width: 2.4;
+      stroke-width: 2.6;
       stroke-linecap: round;
       transform-origin: 17px 17px;
     }
 
-    #cursorSpider.walking .spider-leg--l1 { animation: legSwingA 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l2 { animation: legSwingB 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l3 { animation: legSwingA 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--l4 { animation: legSwingB 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r1 { animation: legSwingB 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r2 { animation: legSwingA 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r3 { animation: legSwingB 0.32s ease-in-out infinite; }
-    #cursorSpider.walking .spider-leg--r4 { animation: legSwingA 0.32s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l1 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l2 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l3 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--l4 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r1 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r2 { animation: legSwingA 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r3 { animation: legSwingB 0.28s ease-in-out infinite; }
+    #cursorSpider.walking .spider-leg--r4 { animation: legSwingA 0.28s ease-in-out infinite; }
 
     @keyframes legSwingA {
-      0%, 100% { transform: rotate(-6deg); }
-      50% { transform: rotate(6deg); }
+      0%, 100% { transform: rotate(-8deg); }
+      50% { transform: rotate(8deg); }
     }
 
     @keyframes legSwingB {
-      0%, 100% { transform: rotate(6deg); }
-      50% { transform: rotate(-6deg); }
+      0%, 100% { transform: rotate(8deg); }
+      50% { transform: rotate(-8deg); }
     }
 
     @media (hover: none), (pointer: coarse) {
-      #webCanvas,
-      #cursorSpider {
+      #webCanvas {
         display: none;
       }
     }
@@ -1846,7 +1856,8 @@
   <a class="skip-link" href="#main">Skip to content</a>
 
   <canvas id="webCanvas" aria-hidden="true"></canvas>
-  <svg id="cursorSpider" viewBox="0 0 34 34" aria-hidden="true" focusable="false">
+  <svg id="cursorSpider" viewBox="0 0 34 34" aria-label="Catch spider to visit GitHub profile" role="button" tabindex="0">
+    <title>🕷️ Catch me to visit my GitHub profile!</title>
     <g class="spider-legs">
       <path class="spider-leg spider-leg--l1" d="M15 15 C 9 12, 4 10, 1 6" />
       <path class="spider-leg spider-leg--l2" d="M14 17 C 7 16, 3 16, 0 15" />
@@ -2515,7 +2526,7 @@
       });
     }
 
-    /* ---------- Spider-web cursor trail + crawling spider ---------- */
+    /* ---------- Spider-web & Autonomous Crawling Spider ---------- */
     (function initSpiderCursor() {
       const isCoarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
       if (prefersReducedMotion || isCoarsePointer) return;
@@ -2538,8 +2549,8 @@
       resizeCanvas();
       window.addEventListener("resize", resizeCanvas);
 
-      // Ambient background nodes, like faint stars the web can snap onto.
-      const NODE_COUNT = 46;
+      // Ambient background nodes, like faint starfield nodes
+      const NODE_COUNT = 40;
       let nodes = [];
       function seedNodes() {
         nodes = Array.from({ length: NODE_COUNT }, () => ({
@@ -2550,59 +2561,70 @@
         }));
       }
       seedNodes();
-      window.addEventListener("resize", () => seedNodes());
+      window.addEventListener("resize", seedNodes);
 
-      const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false };
-      const spiderPos = { x: pointer.x, y: pointer.y };
+      // Mouse position tracking
+      const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false };
+      window.addEventListener("pointermove", (e) => {
+        if (e.pointerType === "touch") return;
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+      }, { passive: true });
+
+      // Spider position & autonomous waypoints
+      const spiderPos = { x: Math.random() * (window.innerWidth - 100) + 50, y: Math.random() * (window.innerHeight - 100) + 50 };
+      let targetX = spiderPos.x;
+      let targetY = spiderPos.y;
+      let pauseUntil = 0;
+
+      function pickNewTarget() {
+        targetX = Math.random() * (window.innerWidth - 140) + 70;
+        targetY = Math.random() * (window.innerHeight - 140) + 70;
+      }
+      pickNewTarget();
+
       const trail = [];
-      const MAX_TRAIL = 18;
-      let lastMoveTime = Date.now();
-      let idleTimer = null;
+      const MAX_TRAIL = 20;
       let lastScrollY = window.scrollY;
       let scrollVelocity = 0;
-
-      window.addEventListener("pointermove", (event) => {
-        if (event.pointerType === "touch") return;
-        pointer.x = event.clientX;
-        pointer.y = event.clientY;
-        pointer.active = true;
-        lastMoveTime = Date.now();
-
-        trail.push({ x: pointer.x, y: pointer.y, life: 1, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2 });
-        if (trail.length > MAX_TRAIL) trail.shift();
-
-        spider.classList.add("active", "walking");
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-          spider.classList.remove("walking");
-        }, 220);
-      }, { passive: true });
 
       window.addEventListener("scroll", () => {
         const currentY = window.scrollY;
         scrollVelocity = (currentY - lastScrollY) * 0.45;
         lastScrollY = currentY;
 
-        if (pointer.active) {
-          spider.classList.add("active", "walking");
-          clearTimeout(idleTimer);
-          idleTimer = setTimeout(() => {
-            spider.classList.remove("walking");
-          }, 300);
-
-          for (const point of trail) {
-            point.y -= scrollVelocity * 0.3;
-          }
+        for (const point of trail) {
+          point.y -= scrollVelocity * 0.35;
         }
       }, { passive: true });
 
-      window.addEventListener("pointerleave", () => {
-        pointer.active = false;
-        spider.classList.remove("active", "walking");
-      });
-      document.addEventListener("mouseleave", () => {
-        pointer.active = false;
-        spider.classList.remove("active", "walking");
+      // Click / Catch Spider to open GitHub!
+      spider.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Trigger spin catch animation & toast
+        spider.classList.add("caught");
+        showToast("🕷️ You caught the spider! Opening GitHub profile...");
+
+        // Create silk explosion particles on catch!
+        for (let i = 0; i < 14; i++) {
+          const angle = (i / 14) * Math.PI * 2;
+          const speed = Math.random() * 4 + 2;
+          trail.push({
+            x: spiderPos.x,
+            y: spiderPos.y,
+            life: 1.4,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed
+          });
+        }
+
+        setTimeout(() => {
+          window.open("https://github.com/chiranjeevi7777", "_blank", "noopener,noreferrer");
+          spider.classList.remove("caught");
+        }, 380);
       });
 
       let heading = 0;
@@ -2610,12 +2632,10 @@
       function draw() {
         requestAnimationFrame(draw);
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        if (!pointer.active) return;
 
-        // Dampen scroll velocity smoothly over frames
         scrollVelocity *= 0.92;
 
-        // Faint ambient starfield, brightening near the cursor & drifting with scroll.
+        // Faint ambient starfield & spider web connections
         for (const node of nodes) {
           node.drift += 0.002;
           node.y -= scrollVelocity * 0.12;
@@ -2624,10 +2644,10 @@
           if (node.y > window.innerHeight) node.y -= window.innerHeight;
 
           const twinkle = 0.35 + Math.sin(node.drift) * 0.15;
-          const dx = node.x - pointer.x;
-          const dy = node.y - pointer.y;
+          const dx = node.x - spiderPos.x;
+          const dy = node.y - spiderPos.y;
           const dist = Math.hypot(dx, dy);
-          const near = Math.max(0, 1 - dist / 280);
+          const near = Math.max(0, 1 - dist / 260);
 
           ctx.beginPath();
           ctx.fillStyle = near > 0.05
@@ -2638,19 +2658,19 @@
 
           if (near > 0.02) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(230,36,41,${(near * 0.6).toFixed(3)})`;
+            ctx.strokeStyle = `rgba(230,36,41,${(near * 0.55).toFixed(3)})`;
             ctx.lineWidth = 1 + near * 0.5;
-            ctx.moveTo(pointer.x, pointer.y);
+            ctx.moveTo(spiderPos.x, spiderPos.y);
             ctx.lineTo(node.x, node.y);
             ctx.stroke();
           }
         }
 
-        // Web strands radiating from the spider like it just spun them.
+        // Web strands radiating from the crawling spider
         const webSpokes = 6;
         for (let i = 0; i < webSpokes; i++) {
           const angle = heading + (i - (webSpokes - 1) / 2) * 0.32;
-          const len = 48 + Math.sin(Date.now() / 250 + i) * 8 + Math.abs(scrollVelocity) * 1.5;
+          const len = 46 + Math.sin(Date.now() / 250 + i) * 8 + Math.abs(scrollVelocity) * 1.5;
           const ex = spiderPos.x + Math.cos(angle) * len;
           const ey = spiderPos.y + Math.sin(angle) * len;
           ctx.beginPath();
@@ -2661,16 +2681,16 @@
           ctx.stroke();
         }
 
-        // Fading trail behind the spider as it crawls and scrolls.
+        // Fading silk trail behind spider as it walks
         for (let i = 0; i < trail.length; i++) {
           const point = trail[i];
-          point.life -= 0.04;
+          point.life -= 0.035;
           point.x += point.vx;
           point.y += point.vy;
           if (point.life <= 0) continue;
           ctx.beginPath();
           ctx.fillStyle = `rgba(230,36,41,${(point.life * 0.55).toFixed(3)})`;
-          ctx.arc(point.x, point.y, 1.8 * point.life, 0, Math.PI * 2);
+          ctx.arc(point.x, point.y, 2 * point.life, 0, Math.PI * 2);
           ctx.fill();
         }
         while (trail.length && trail[0].life <= 0) trail.shift();
@@ -2679,24 +2699,60 @@
 
       function animateSpider() {
         requestAnimationFrame(animateSpider);
-        const dx = pointer.x - spiderPos.x;
-        const dy = pointer.y - spiderPos.y;
-        const dist = Math.hypot(dx, dy);
+        const now = Date.now();
 
-        if (dist > 0.5) {
-          heading = Math.atan2(dy, dx);
+        // Check distance to mouse cursor
+        const dxMouse = mouse.x - spiderPos.x;
+        const dyMouse = mouse.y - spiderPos.y;
+        const distMouse = Math.hypot(dxMouse, dyMouse);
+
+        let destX = targetX;
+        let destY = targetY;
+
+        // If cursor gets very close, spider gets startled and scurries to escape!
+        if (mouse.active && distMouse < 110) {
+          destX = spiderPos.x - dxMouse * 1.5;
+          destY = spiderPos.y - dyMouse * 1.5;
+          destX = Math.max(50, Math.min(window.innerWidth - 50, destX));
+          destY = Math.max(50, Math.min(window.innerHeight - 50, destY));
+          pauseUntil = 0;
         }
 
-        const ease = Math.min(0.24, 0.09 + dist / 850);
-        spiderPos.x += dx * ease;
-        spiderPos.y += dy * ease;
+        if (now < pauseUntil) {
+          spider.classList.remove("walking");
+          return;
+        }
+
+        const dx = destX - spiderPos.x;
+        const dy = destY - spiderPos.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 18) {
+          pauseUntil = now + Math.random() * 1200 + 400;
+          pickNewTarget();
+          spider.classList.remove("walking");
+        } else {
+          spider.classList.add("walking");
+          heading = Math.atan2(dy, dx);
+
+          const stepSpeed = Math.min(dist * 0.05 + 1.4 + Math.abs(scrollVelocity) * 0.2, 5.0);
+          spiderPos.x += Math.cos(heading) * stepSpeed;
+          spiderPos.y += Math.sin(heading) * stepSpeed;
+
+          if (Math.random() < 0.6) {
+            trail.push({
+              x: spiderPos.x,
+              y: spiderPos.y,
+              life: 1,
+              vx: (Math.random() - 0.5) * 0.8,
+              vy: (Math.random() - 0.5) * 0.8
+            });
+            if (trail.length > MAX_TRAIL) trail.shift();
+          }
+        }
 
         spider.style.transform =
           `translate(${spiderPos.x}px, ${spiderPos.y}px) translate(-50%, -50%) rotate(${(heading * 180) / Math.PI + 90}deg)`;
-
-        if (pointer.active && Date.now() - lastMoveTime > 900 && Math.abs(scrollVelocity) < 0.1) {
-          spider.classList.remove("walking");
-        }
       }
       requestAnimationFrame(animateSpider);
     })();
