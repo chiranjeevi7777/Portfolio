@@ -1888,7 +1888,7 @@
 
       <div class="nav-actions">
         <!-- TODO: Replace placeholder resume link with the final resume PDF. -->
-        <a class="btn btn-secondary magnetic" href="#" aria-label="Download resume">
+        <a class="btn btn-secondary magnetic" href="https://drive.google.com/drive/folders/1AqQvxy2AtKGo73Un4NmBjk3TR8hRA7sD?usp=drive_link" aria-label="Download resume">
           Resume
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
         </a>
@@ -2350,7 +2350,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>Copyright <span id="year"></span> Chiranjeevi R. Built as a premium AI engineering portfolio.</p>
+      <p>Copyright <span id="year"></span> Chiranjeevi R. Let's build together.</p>
       <ul class="footer-links" aria-label="Footer navigation">
         <li><a href="#about">About</a></li>
         <li><a href="#projects">Projects</a></li>
@@ -2375,19 +2375,21 @@
 
     const menuToggle = document.getElementById("menuToggle");
     const navLinks = document.getElementById("navLinks");
-    menuToggle.addEventListener("click", () => {
-      const isOpen = navLinks.classList.toggle("open");
-      menuToggle.classList.toggle("active", isOpen);
-      menuToggle.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    navLinks.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("open");
-        menuToggle.classList.remove("active");
-        menuToggle.setAttribute("aria-expanded", "false");
+    if (menuToggle && navLinks) {
+      menuToggle.addEventListener("click", () => {
+        const isOpen = navLinks.classList.toggle("open");
+        menuToggle.classList.toggle("active", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
       });
-    });
+
+      navLinks.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          navLinks.classList.remove("open");
+          menuToggle.classList.remove("active");
+          menuToggle.setAttribute("aria-expanded", "false");
+        });
+      });
+    }
 
     const roles = [
       "AI Engineer",
@@ -2467,14 +2469,17 @@
       window.setTimeout(() => toast.classList.remove("show"), 1800);
     }
 
-    document.getElementById("copyEmail").addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(email);
-        showToast("Email copied");
-      } catch (error) {
-        window.location.href = `mailto:${email}`;
-      }
-    });
+    const copyEmailBtn = document.getElementById("copyEmail");
+    if (copyEmailBtn) {
+      copyEmailBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(email);
+          showToast("Email copied");
+        } catch (error) {
+          window.location.href = `mailto:${email}`;
+        }
+      });
+    }
 
     document.querySelectorAll('a[href="#"]').forEach((anchor) => {
       anchor.addEventListener("click", (event) => {
@@ -2564,7 +2569,7 @@
       const spiderPos = { x: Math.random() * (window.innerWidth - 100) + 50, y: Math.random() * (window.innerHeight - 100) + 50 };
       let targetX = spiderPos.x;
       let targetY = spiderPos.y;
-      let pauseUntil = 0;
+      let pauseUntil = 0.5;
 
       function pickNewTarget() {
         targetX = Math.random() * (window.innerWidth - 140) + 70;
@@ -2645,11 +2650,16 @@
           const dist = Math.hypot(dx, dy);
           const near = Math.max(0, 1 - dist / 260);
 
+          const mdx = node.x - mouse.x;
+          const mdy = node.y - mouse.y;
+          const mDist = Math.hypot(mdx, mdy);
+          const mNear = mouse.active ? Math.max(0, 1 - mDist / 200) : 0;
+
           ctx.beginPath();
-          ctx.fillStyle = near > 0.05
-            ? `rgba(230,36,41,${(0.25 + near * 0.65).toFixed(3)})`
+          ctx.fillStyle = (near > 0.05 || mNear > 0.05)
+            ? `rgba(230,36,41,${(0.25 + Math.max(near, mNear) * 0.65).toFixed(3)})`
             : `rgba(148,163,184,${twinkle.toFixed(3)})`;
-          ctx.arc(node.x, node.y, node.r + near * 1.4, 0, Math.PI * 2);
+          ctx.arc(node.x, node.y, node.r + Math.max(near, mNear) * 1.4, 0, Math.PI * 2);
           ctx.fill();
 
           if (near > 0.02) {
@@ -2660,6 +2670,22 @@
             ctx.lineTo(node.x, node.y);
             ctx.stroke();
           }
+
+          if (mNear > 0.02) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(255,255,255,${(mNear * 0.45).toFixed(3)})`;
+            ctx.lineWidth = 0.8 + mNear * 0.4;
+            ctx.moveTo(mouse.x, mouse.y);
+            ctx.lineTo(node.x, node.y);
+            ctx.stroke();
+          }
+        }
+
+        if (mouse.active) {
+          ctx.beginPath();
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.arc(mouse.x, mouse.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
         }
 
         // Web strands radiating from the crawling spider
