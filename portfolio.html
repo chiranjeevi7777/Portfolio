@@ -2555,9 +2555,11 @@
       const pointer = { x: window.innerWidth / 2, y: window.innerHeight / 2, active: false };
       const spiderPos = { x: pointer.x, y: pointer.y };
       const trail = [];
-      const MAX_TRAIL = 14;
+      const MAX_TRAIL = 18;
       let lastMoveTime = Date.now();
       let idleTimer = null;
+      let lastScrollY = window.scrollY;
+      let scrollVelocity = 0;
 
       window.addEventListener("pointermove", (event) => {
         if (event.pointerType === "touch") return;
@@ -2566,7 +2568,7 @@
         pointer.active = true;
         lastMoveTime = Date.now();
 
-        trail.push({ x: pointer.x, y: pointer.y, life: 1 });
+        trail.push({ x: pointer.x, y: pointer.y, life: 1, vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 1.2 });
         if (trail.length > MAX_TRAIL) trail.shift();
 
         spider.classList.add("active", "walking");
@@ -2574,6 +2576,24 @@
         idleTimer = setTimeout(() => {
           spider.classList.remove("walking");
         }, 220);
+      }, { passive: true });
+
+      window.addEventListener("scroll", () => {
+        const currentY = window.scrollY;
+        scrollVelocity = (currentY - lastScrollY) * 0.45;
+        lastScrollY = currentY;
+
+        if (pointer.active) {
+          spider.classList.add("active", "walking");
+          clearTimeout(idleTimer);
+          idleTimer = setTimeout(() => {
+            spider.classList.remove("walking");
+          }, 300);
+
+          for (const point of trail) {
+            point.y -= scrollVelocity * 0.3;
+          }
+        }
       }, { passive: true });
 
       window.addEventListener("pointerleave", () => {
@@ -2592,26 +2612,34 @@
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         if (!pointer.active) return;
 
-        // Faint ambient starfield, brightening near the cursor.
+        // Dampen scroll velocity smoothly over frames
+        scrollVelocity *= 0.92;
+
+        // Faint ambient starfield, brightening near the cursor & drifting with scroll.
         for (const node of nodes) {
           node.drift += 0.002;
+          node.y -= scrollVelocity * 0.12;
+
+          if (node.y < 0) node.y += window.innerHeight;
+          if (node.y > window.innerHeight) node.y -= window.innerHeight;
+
           const twinkle = 0.35 + Math.sin(node.drift) * 0.15;
           const dx = node.x - pointer.x;
           const dy = node.y - pointer.y;
           const dist = Math.hypot(dx, dy);
-          const near = Math.max(0, 1 - dist / 260);
+          const near = Math.max(0, 1 - dist / 280);
 
           ctx.beginPath();
           ctx.fillStyle = near > 0.05
-            ? `rgba(230,36,41,${(0.25 + near * 0.6).toFixed(3)})`
+            ? `rgba(230,36,41,${(0.25 + near * 0.65).toFixed(3)})`
             : `rgba(148,163,184,${twinkle.toFixed(3)})`;
-          ctx.arc(node.x, node.y, node.r + near * 1.2, 0, Math.PI * 2);
+          ctx.arc(node.x, node.y, node.r + near * 1.4, 0, Math.PI * 2);
           ctx.fill();
 
           if (near > 0.02) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(230,36,41,${(near * 0.55).toFixed(3)})`;
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgba(230,36,41,${(near * 0.6).toFixed(3)})`;
+            ctx.lineWidth = 1 + near * 0.5;
             ctx.moveTo(pointer.x, pointer.y);
             ctx.lineTo(node.x, node.y);
             ctx.stroke();
@@ -2619,28 +2647,30 @@
         }
 
         // Web strands radiating from the spider like it just spun them.
-        const webSpokes = 5;
+        const webSpokes = 6;
         for (let i = 0; i < webSpokes; i++) {
-          const angle = heading + (i - (webSpokes - 1) / 2) * 0.34;
-          const len = 46 + Math.sin(Date.now() / 300 + i) * 6;
+          const angle = heading + (i - (webSpokes - 1) / 2) * 0.32;
+          const len = 48 + Math.sin(Date.now() / 250 + i) * 8 + Math.abs(scrollVelocity) * 1.5;
           const ex = spiderPos.x + Math.cos(angle) * len;
           const ey = spiderPos.y + Math.sin(angle) * len;
           ctx.beginPath();
-          ctx.strokeStyle = "rgba(230,36,41,0.32)";
+          ctx.strokeStyle = "rgba(230,36,41,0.36)";
           ctx.lineWidth = 1.1;
           ctx.moveTo(spiderPos.x, spiderPos.y);
           ctx.lineTo(ex, ey);
           ctx.stroke();
         }
 
-        // Fading trail behind the spider as it crawls.
+        // Fading trail behind the spider as it crawls and scrolls.
         for (let i = 0; i < trail.length; i++) {
           const point = trail[i];
-          point.life -= 0.045;
+          point.life -= 0.04;
+          point.x += point.vx;
+          point.y += point.vy;
           if (point.life <= 0) continue;
           ctx.beginPath();
-          ctx.fillStyle = `rgba(230,36,41,${(point.life * 0.5).toFixed(3)})`;
-          ctx.arc(point.x, point.y, 1.6 * point.life, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(230,36,41,${(point.life * 0.55).toFixed(3)})`;
+          ctx.arc(point.x, point.y, 1.8 * point.life, 0, Math.PI * 2);
           ctx.fill();
         }
         while (trail.length && trail[0].life <= 0) trail.shift();
@@ -2657,15 +2687,14 @@
           heading = Math.atan2(dy, dx);
         }
 
-        // Ease toward the pointer so the spider feels like it's scurrying, not teleporting.
-        const ease = Math.min(0.22, 0.08 + dist / 900);
+        const ease = Math.min(0.24, 0.09 + dist / 850);
         spiderPos.x += dx * ease;
         spiderPos.y += dy * ease;
 
         spider.style.transform =
           `translate(${spiderPos.x}px, ${spiderPos.y}px) translate(-50%, -50%) rotate(${(heading * 180) / Math.PI + 90}deg)`;
 
-        if (pointer.active && Date.now() - lastMoveTime > 900) {
+        if (pointer.active && Date.now() - lastMoveTime > 900 && Math.abs(scrollVelocity) < 0.1) {
           spider.classList.remove("walking");
         }
       }
