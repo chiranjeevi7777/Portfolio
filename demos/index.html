@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chiranjeevi R | Interactive AI & Project Showcases</title>
+  
+  <meta name="description" content="Interactive live demos, system architectures, and API walkthroughs for 20 open-source repositories by Chiranjeevi R (@chiranjeevi7777). Experience AI, RAG, Computer Vision, and Full Stack applications live.">
+  <meta name="keywords" content="Chiranjeevi R, AI Engineer, Full Stack, Machine Learning, InceptionV3, RAG, ChromaDB, Bedrock, LangChain, React, FastAPI">
+  <meta name="author" content="Chiranjeevi R">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Chiranjeevi R | Interactive AI & Project Showcases">
+  <meta property="og:description" content="Explore live interactive demos, architecture pipelines, and API specs across 20 open-source repositories.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://chiranjeevi7777.github.io/Portfolio/demos/">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar">
+    <a href="../index.html" class="brand">
+      <div class="brand-badge">CR</div>
+      <div class="brand-info">
+        <h1>Chiranjeevi R</h1>
+        <span>Project Showcases & Demos</span>
+      </div>
+    </a>
+    <div class="nav-actions">
+      <button class="btn btn-secondary" onclick="navigateToDirectory()">
+        📁 All Repositories (20)
+      </button>
+      <a class="btn btn-primary" href="../index.html">
+        🏠 Back to Portfolio
+      </a>
+      <a class="btn btn-secondary" href="https://github.com/chiranjeevi7777" target="_blank" rel="noopener">
+        🐙 GitHub
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Global Directory View (Shows all 20 repos with search/filter) -->
+    <section id="directoryView" class="directory-view">
+      
+      <div class="directory-header">
+        <h2>Live Project Showcases & Architecture Demos</h2>
+        <p>
+          Experience live interactive simulations, inspect data flows, and explore API specifications across all 20 open-source repositories.
+        </p>
+      </div>
+
+      <div class="filter-bar glass">
+        <div class="filter-top">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="projectSearch" placeholder="Search by project name, tech stack (RAG, Vision, React, PyTorch)..." aria-label="Search repositories">
+          </div>
+          <span class="project-count-pill" id="projectCount">20 Repositories</span>
+        </div>
+        <div class="category-pills" id="categoryPills">
+          <!-- Dynamic Category Pills -->
+        </div>
+      </div>
+
+      <div class="projects-grid" id="projectsGrid">
+        <!-- Dynamic Cards rendered via app.js -->
+      </div>
+    </section>
+
+    <!-- Single Project View (Opened when deep-linked or card clicked) -->
+    <section id="projectView" class="project-view">
+      
+      <!-- Project Header Card -->
+      <div class="project-view-header">
+        <div class="breadcrumb">
+          <a onclick="navigateToDirectory()">All Projects</a>
+          <span>/</span>
+          <span id="breadcrumbCategory">Category</span>
+          <span>/</span>
+          <span id="breadcrumbName" style="color:var(--text-main); font-weight:600;">Project Name</span>
+        </div>
+
+        <div class="project-header-top">
+          <div class="project-header-info">
+            <h2 id="viewTitle">Project Title</h2>
+            <p class="project-header-desc" id="viewDesc">Project detailed description and problem framing.</p>
+            <div class="project-tags" id="viewTechTags">
+              <!-- Tech tags -->
+            </div>
+          </div>
+          <div class="project-header-actions">
+            <a class="btn btn-primary" id="githubLinkBtn" href="#" target="_blank" rel="noopener">
+              🐙 View on GitHub
+            </a>
+            <button class="btn btn-secondary" onclick="copyCurrentDemoLink()">
+              📋 Copy Live Link
+            </button>
+            <button class="btn btn-secondary" onclick="navigateToDirectory()">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Strip -->
+        <div class="metrics-strip" id="metricsStrip">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav">
+        <button class="tab-btn active" id="tabBtn-sim" onclick="switchTab('sim')">
+          🎮 Interactive UI Simulator
+        </button>
+        <button class="tab-btn" id="tabBtn-arch" onclick="switchTab('arch')">
+          🏗️ System Architecture & Data Flow
+        </button>
+        <button class="tab-btn" id="tabBtn-api" onclick="switchTab('api')">
+          ⚡ API Specs & Code Walkthrough
+        </button>
+        <button class="tab-btn" id="tabBtn-quick" onclick="switchTab('quick')">
+          💻 Quick Start & Local Run
+        </button>
+      </div>
+
+      <!-- Tab 1: Simulator Mount -->
+      <div class="tab-content active" id="tabContent-sim">
+        <div id="simMountPoint"></div>
+      </div>
+
+      <!-- Tab 2: Architecture Mount -->
+      <div class="tab-content" id="tabContent-arch">
+        <div id="archMountPoint"></div>
+      </div>
+
+      <!-- Tab 3: API Mount -->
+      <div class="tab-content" id="tabContent-api">
+        <div id="apiMountPoint"></div>
+      </div>
+
+      <!-- Tab 4: Quick Start Mount -->
+      <div class="tab-content" id="tabContent-quick">
+        <div id="quickMountPoint"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>
+      Engineered by <a href="https://github.com/chiranjeevi7777" target="_blank" rel="noopener">Chiranjeevi R</a> — Full Stack AI Engineer.
+      All projects open-source on <a href="https://github.com/chiranjeevi7777" target="_blank" rel="noopener">GitHub</a>.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
